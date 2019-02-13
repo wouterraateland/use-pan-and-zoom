@@ -47,6 +47,7 @@ usePanZoom takes the following parameters:
   container: React.RefObject<HTMLElement>,
   enablePan: Boolean?,
   enableZoom: Boolean?,
+  requirePinch: Boolean?,
   minZoom: Number?,
   maxZoom: Number?,
   minX: Number?,
