@@ -41,6 +41,7 @@ usePanZoom takes the following parameters:
     onMouseDown: (event: React.SyntheticEvent) => void,
     onMouseMove: (event: React.SyntheticEvent) => void,
     onMouseUp: (event: React.SyntheticEvent) => void,
+    onMouseOut: (event: React.SyntheticEvent) => void,
     onWheel: (event: React.SyntheticEvent) => void
   }
 } = usePanZoom({
@@ -53,6 +54,15 @@ usePanZoom takes the following parameters:
   minX: Number?,
   maxX: Number?,
   minY: Number?,
-  maxY: Number?
+  maxY: Number?,
+  initialZoom: Number?,
+  initialPan: {
+    x: Number?,
+    y: Number?
+  },
+  onPanStart: (event: React.SyntheticEvent) => void,
+  onPan: (event: React.SyntheticEvent) => void,
+  onPanEnd: (event: React.SyntheticEvent) => void,
+  onZoom: (event: React.SyntheticEvent) => void
 })
 ```
