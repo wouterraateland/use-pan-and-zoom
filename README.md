@@ -18,7 +18,7 @@ const Demo = () => {
   );
 };
 ```
-[![Edit react-powerhooks example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/j31y1l90m3)
+[![Edit react-powerhooks example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/n3rpmj60w0)
 
 ## Installation
 `yarn add use-pan-and-zoom`
@@ -46,23 +46,23 @@ usePanZoom takes the following parameters:
   }
 } = usePanZoom({
   container: React.RefObject<HTMLElement>,
-  enablePan: Boolean?,
-  enableZoom: Boolean?,
-  requirePinch: Boolean?,
-  minZoom: Number?,
-  maxZoom: Number?,
-  minX: Number?,
-  maxX: Number?,
-  minY: Number?,
-  maxY: Number?,
-  initialZoom: Number?,
-  initialPan: {
-    x: Number?,
-    y: Number?
+  enablePan?: Boolean,
+  enableZoom?: Boolean,
+  requirePinch?: Boolean,
+  minZoom?: Number,
+  maxZoom?: Number,
+  minX?: Number,
+  maxX?: Number,
+  minY?: Number,
+  maxY?: Number,
+  initialZoom?: Number,
+  initialPan?: {
+    x: Number,
+    y: Number
   },
-  onPanStart: (event: React.SyntheticEvent) => void,
-  onPan: (event: React.SyntheticEvent) => void,
-  onPanEnd: (event: React.SyntheticEvent) => void,
-  onZoom: (event: React.SyntheticEvent) => void
+  onPanStart?: (event: React.SyntheticEvent) => void,
+  onPan?: (event: React.SyntheticEvent) => void,
+  onPanEnd?: (event: React.SyntheticEvent) => void,
+  onZoom?: (event: React.SyntheticEvent) => void
 })
 ```
