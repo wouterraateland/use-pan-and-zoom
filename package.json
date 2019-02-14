@@ -1,6 +1,6 @@
 {
   "name": "use-pan-and-zoom",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Pan and zoom a container using React Hooks",
   "source": "src/index.js",
   "main": "build/index.js",
