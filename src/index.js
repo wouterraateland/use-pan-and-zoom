@@ -2,23 +2,34 @@ import { useState } from "react";
 
 const clamp = (min, max) => value => Math.max(min, Math.min(value, max));
 const noop = () => {};
+const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)));
+const maybe = (f, g) => v => (v === null || v === undefined ? f : g(v));
+const snd = g => ([x, y]) => [x, g(y)];
+const toPair = v => [v, v];
 
-const getOffset = el => {
-  if (el) {
-    const { left, top } = getOffset(el.offsetParent);
-    return { left: left + el.offsetLeft, top: top + el.offsetTop };
-  } else {
-    return { left: 0, top: 0 };
-  }
-};
+const getOffset = maybe(
+  { left: 0, top: 0 },
+  compose(
+    ([el, { left, top }]) => ({
+      left: left + el.offsetLeft,
+      top: top + el.offsetTop
+    }),
+    snd(el => getOffset(el.offsetParent)),
+    toPair
+  )
+);
 
-function getPointer(pageX, pageY, el) {
-  const { left, top } = getOffset(el);
-  return {
-    x: pageX - left,
-    y: pageY - top
-  };
-}
+const getPositionOnElement = compose(
+  ({ left, top }) => (x, y) => ({
+    x: x - left,
+    y: y - top
+  }),
+  getOffset
+);
+
+const isChildOf = (child, parent) =>
+  !!(child && parent) &&
+  (child === parent || isChildOf(child.parentElement, parent));
 
 const usePanZoom = ({
   container,
@@ -79,15 +90,15 @@ const usePanZoom = ({
   function onMouseUp(event) {
     if (isPanning) {
       onPanEnd(event);
+      setPanning(false);
     }
-    setPanning(false);
   }
 
   function onMouseOut(event) {
-    if (isPanning) {
+    if (isPanning && !isChildOf(event.relatedTarget, container.current)) {
       onPanEnd(event);
+      setPanning(false);
     }
-    setPanning(false);
   }
 
   function onWheel(event) {
@@ -95,7 +106,10 @@ const usePanZoom = ({
     if (enableZoom && container.current && (!requirePinch || event.ctrlKey)) {
       const { pageX, pageY, deltaY } = event;
       setTransform(({ x, y, zoom }) => {
-        const pointerPosition = getPointer(pageX, pageY, container.current);
+        const pointerPosition = getPositionOnElement(container.current)(
+          pageX,
+          pageY
+        );
         const newZoom = clamp(minZoom, maxZoom)(zoom * Math.pow(0.99, deltaY));
 
         return {
