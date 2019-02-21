@@ -1,14 +1,15 @@
 import { useState } from "react";
 
 const clamp = (min, max) => value => Math.max(min, Math.min(value, max));
+const identity = x => x;
 const noop = () => {};
 const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)));
-const maybe = (f, g) => v => (v === null || v === undefined ? f : g(v));
+const maybe = (f, g) => v => (v === null || v === undefined ? f() : g(v));
 const snd = g => ([x, y]) => [x, g(y)];
 const toPair = v => [v, v];
 
 const getOffset = maybe(
-  { left: 0, top: 0 },
+  () => ({ left: 0, top: 0 }),
   compose(
     ([el, { left, top }]) => ({
       left: left + el.offsetLeft,
@@ -63,23 +64,33 @@ const usePanZoom = ({
 
   const setPan = f =>
     setTransform(({ x, y, zoom }) => {
-      const v = typeof f === "function" ? f(x, y) : f;
+      const newPan = typeof f === "function" ? f({ x, y }) : f;
 
       return {
-        x: clamp(minX, maxX)(v.x),
-        y: clamp(minY, maxY)(v.y),
+        x: clamp(minX, maxX)(newPan.x),
+        y: clamp(minY, maxY)(newPan.y),
         zoom
       };
     });
 
-  const setZoom = f =>
+  const setZoom = (f, maybeCenter) =>
     setTransform(({ x, y, zoom }) => {
-      const z = typeof f === "function" ? f(zoom) : f;
+      const newZoom = clamp(minZoom, maxZoom)(
+        typeof f === "function" ? f(zoom) : f
+      );
+
+      const center = maybe(
+        () => ({
+          x: container.current.offsetWidth / 2,
+          y: container.current.offsetHeight / 2
+        }),
+        identity
+      )(maybeCenter);
 
       return {
-        x,
-        y,
-        zoom: clamp(minZoom, maxZoom)(z)
+        x: clamp(minX, maxX)(x + ((center.x - x) * (zoom - newZoom)) / zoom),
+        y: clamp(minY, maxY)(y + ((center.y - y) * (zoom - newZoom)) / zoom),
+        zoom: newZoom
       };
     });
 
@@ -97,16 +108,16 @@ const usePanZoom = ({
   }
 
   function onMouseMove(event) {
-    const { pageX, pageY } = event;
     if (isPanning) {
-      setpan(({ x, y }) => ({
+      const { pageX, pageY } = event;
+      setPan(({ x, y }) => ({
         x: x + pageX - prev.x,
         y: y + pageY - prev.y
       }));
+      setPrev({ x: pageX, y: pageY });
 
       onPan(event);
     }
-    setPrev({ x: pageX, y: pageY });
   }
 
   function onMouseUp(event) {
@@ -127,25 +138,16 @@ const usePanZoom = ({
     event.preventDefault();
     if (enableZoom && container.current && (!requirePinch || event.ctrlKey)) {
       const { pageX, pageY, deltaY } = event;
-      setTransform(({ x, y, zoom }) => {
-        const pointerPosition = getPositionOnElement(container.current)(
-          pageX,
-          pageY
-        );
-        const newZoom = clamp(minZoom, maxZoom)(
-          zoom * Math.pow(1 - zoomSensitivity, deltaY)
-        );
+      const pointerPosition = getPositionOnElement(container.current)(
+        pageX,
+        pageY
+      );
 
-        return {
-          x: clamp(minX, maxX)(
-            x + ((pointerPosition.x - x) * (zoom - newZoom)) / zoom
-          ),
-          y: clamp(minY, maxY)(
-            y + ((pointerPosition.y - y) * (zoom - newZoom)) / zoom
-          ),
-          zoom: newZoom
-        };
-      });
+      setZoom(
+        zoom => zoom * Math.pow(1 - zoomSensitivity, deltaY),
+        pointerPosition
+      );
+
       onZoom(event);
     }
   }

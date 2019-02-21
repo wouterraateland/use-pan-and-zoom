@@ -38,13 +38,10 @@ usePanZoom takes the following parameters:
 ```tsx
 {
   transform: String,
-  pan: {
-    x: Number,
-    y: Number
-  };
+  pan: Position,
   zoom: Number,
-  setPan: { x: Number, y: Number } | ({ x: Number, y: Number }) => { x: Number, y: Number }
-  setZoom: Number | (zoom: Number) => Number
+  setPan: (position: Position | (position: Position) => Position) => void,
+  setZoom: (zoom: Number | (zoom: Number) => Number, center: Position) => void,
   panZoomHandlers: {
     onMouseDown: (event: React.SyntheticEvent) => void,
     onMouseMove: (event: React.SyntheticEvent) => void,
@@ -74,4 +71,10 @@ usePanZoom takes the following parameters:
   onPanEnd?: (event: React.SyntheticEvent) => void,
   onZoom?: (event: React.SyntheticEvent) => void
 })
+```
+
+Where
+
+```tsx
+type Position = { x: Number; y: Number };
 ```
