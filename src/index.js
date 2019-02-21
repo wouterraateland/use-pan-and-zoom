@@ -36,6 +36,7 @@ const usePanZoom = ({
   enablePan = true,
   enableZoom = true,
   requirePinch = false,
+  zoomSensitivity = 0.01,
   minZoom = 0,
   maxZoom = Infinity,
   minX = -Infinity,
@@ -60,6 +61,28 @@ const usePanZoom = ({
   });
   const [prev, setPrev] = useState({ x: 0, y: 0 });
 
+  const setPan = f =>
+    setTransform(({ x, y, zoom }) => {
+      const v = typeof f === "function" ? f(x, y) : f;
+
+      return {
+        x: clamp(minX, maxX)(v.x),
+        y: clamp(minY, maxY)(v.y),
+        zoom
+      };
+    });
+
+  const setZoom = f =>
+    setTransform(({ x, y, zoom }) => {
+      const z = typeof f === "function" ? f(zoom) : f;
+
+      return {
+        x,
+        y,
+        zoom: clamp(minZoom, maxZoom)(z)
+      };
+    });
+
   function onMouseDown(event) {
     if (enablePan) {
       setPanning(true);
@@ -76,10 +99,9 @@ const usePanZoom = ({
   function onMouseMove(event) {
     const { pageX, pageY } = event;
     if (isPanning) {
-      setTransform(({ x, y, zoom }) => ({
-        x: clamp(minX, maxX)(x + pageX - prev.x),
-        y: clamp(minY, maxY)(y + pageY - prev.y),
-        zoom
+      setpan(({ x, y }) => ({
+        x: x + pageX - prev.x,
+        y: y + pageY - prev.y
       }));
 
       onPan(event);
@@ -110,7 +132,9 @@ const usePanZoom = ({
           pageX,
           pageY
         );
-        const newZoom = clamp(minZoom, maxZoom)(zoom * Math.pow(0.99, deltaY));
+        const newZoom = clamp(minZoom, maxZoom)(
+          zoom * Math.pow(1 - zoomSensitivity, deltaY)
+        );
 
         return {
           x: clamp(minX, maxX)(
@@ -132,6 +156,8 @@ const usePanZoom = ({
     })`,
     pan: { x: transform.x, y: transform.y },
     zoom: transform.zoom,
+    setPan,
+    setZoom,
     panZoomHandlers: {
       onMouseDown,
       onMouseMove,
