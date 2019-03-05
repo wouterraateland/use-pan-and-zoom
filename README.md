@@ -9,7 +9,7 @@ import usePanZoom from "use-pan-and-zoom";
 
 const Demo = () => {
   const panZoomContainer = useRef(null);
-  const { transform, panZoomHandlers } = usePanZoom();
+  const { transform, panZoomHandlers } = usePanZoom({ container: panZoomContainer });
 
   return (
     <div ref={panZoomContainer} {...panZoomHandlers}>
