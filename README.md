@@ -9,7 +9,9 @@ import usePanZoom from "use-pan-and-zoom";
 
 const Demo = () => {
   const panZoomContainer = useRef(null);
-  const { transform, panZoomHandlers } = usePanZoom({ container: panZoomContainer });
+  const { transform, panZoomHandlers } = usePanZoom({
+    container: panZoomContainer
+  });
 
   return (
     <div ref={panZoomContainer} {...panZoomHandlers}>
@@ -54,6 +56,7 @@ usePanZoom takes the following parameters:
   enablePan?: Boolean,
   enableZoom?: Boolean,
   requirePinch?: Boolean,
+  preventClickOnPan?: Boolean,
   zoomSensitivity?: Number, // Between 0 and 1
   minZoom?: Number,
   maxZoom?: Number,

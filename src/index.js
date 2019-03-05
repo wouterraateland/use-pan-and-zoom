@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState, useRef } from "react";
 
 const clamp = (min, max) => value => Math.max(min, Math.min(value, max));
 const identity = x => x;
@@ -37,6 +37,7 @@ const usePanZoom = ({
   enablePan = true,
   enableZoom = true,
   requirePinch = false,
+  preventClickOnPan = true,
   zoomSensitivity = 0.01,
   minZoom = 0,
   maxZoom = Infinity,
@@ -54,103 +55,138 @@ const usePanZoom = ({
   if (container === undefined) {
     throw Error("Container cannot be empty and should be a ref");
   }
+  const wasPanning = useRef(false);
+  const prev = useRef({ prevX: 0, prevY: 0 });
 
   const [isPanning, setPanning] = useState(false);
   const [transform, setTransform] = useState({
     ...initialPan,
     zoom: initialZoom
   });
-  const [prev, setPrev] = useState({ x: 0, y: 0 });
 
-  const setPan = f =>
-    setTransform(({ x, y, zoom }) => {
-      const newPan = typeof f === "function" ? f({ x, y }) : f;
+  const clampX = useCallback(clamp(minX, maxX), [minX, maxX]);
+  const clampY = useCallback(clamp(minY, maxY), [minY, maxY]);
+  const clampZoom = useCallback(clamp(minZoom, maxZoom), [minZoom, maxZoom]);
 
-      return {
-        x: clamp(minX, maxX)(newPan.x),
-        y: clamp(minY, maxY)(newPan.y),
-        zoom
-      };
-    });
+  const setPan = useCallback(
+    f =>
+      setTransform(({ x, y, zoom }) => {
+        const newPan = typeof f === "function" ? f({ x, y }) : f;
 
-  const setZoom = (f, maybeCenter) =>
-    setTransform(({ x, y, zoom }) => {
-      const newZoom = clamp(minZoom, maxZoom)(
-        typeof f === "function" ? f(zoom) : f
-      );
+        return {
+          x: clampX(newPan.x),
+          y: clampY(newPan.y),
+          zoom
+        };
+      }),
+    [minX, maxX, minY, maxY]
+  );
 
-      const center = maybe(
-        () => ({
-          x: container.current.offsetWidth / 2,
-          y: container.current.offsetHeight / 2
-        }),
-        identity
-      )(maybeCenter);
+  const setZoom = useCallback(
+    (f, maybeCenter) =>
+      setTransform(({ x, y, zoom }) => {
+        const newZoom = clampZoom(typeof f === "function" ? f(zoom) : f);
 
-      return {
-        x: clamp(minX, maxX)(x + ((center.x - x) * (zoom - newZoom)) / zoom),
-        y: clamp(minY, maxY)(y + ((center.y - y) * (zoom - newZoom)) / zoom),
-        zoom: newZoom
-      };
-    });
+        const center = maybe(
+          () => ({
+            x: container.current.offsetWidth / 2,
+            y: container.current.offsetHeight / 2
+          }),
+          identity
+        )(maybeCenter);
 
-  function onMouseDown(event) {
-    if (enablePan) {
-      setPanning(true);
-      setPrev({ x: event.pageX, y: event.pageY });
+        return {
+          x: clampX(x + ((center.x - x) * (zoom - newZoom)) / zoom),
+          y: clampY(y + ((center.y - y) * (zoom - newZoom)) / zoom),
+          zoom: newZoom
+        };
+      }),
+    [minX, maxX, minY, maxY, minZoom, maxZoom]
+  );
 
-      onPanStart(event);
+  const onMouseDown = useCallback(
+    event => {
+      if (enablePan) {
+        prev.current = { prevX: event.pageX, prevY: event.pageY };
 
-      event.stopPropagation();
-      event.nativeEvent.stopImmediatePropagation();
+        setPanning(true);
+
+        onPanStart(event);
+      }
+    },
+    [enablePan, onPanStart]
+  );
+
+  const onMouseMove = useCallback(
+    event => {
+      if (isPanning) {
+        wasPanning.current = true;
+
+        const { pageX, pageY } = event;
+        const { prevX, prevY } = prev.current;
+        prev.current = { prevX: pageX, prevY: pageY };
+
+        setPan(({ x, y }) => ({
+          x: x + pageX - prevX,
+          y: y + pageY - prevY
+        }));
+
+        onPan(event);
+      }
+    },
+    [isPanning, onPan, minX, maxX, minY, maxY]
+  );
+
+  const onMouseUp = useCallback(
+    event => {
+      if (isPanning) {
+        setPanning(false);
+        onPanEnd(event);
+      }
+    },
+    [isPanning, onPanEnd]
+  );
+
+  const onClickCapture = useCallback(
+    event => {
+      if ((preventClickOnPan, wasPanning.current)) {
+        wasPanning.current = false;
+        event.stopPropagation();
+      }
+    },
+    [preventClickOnPan]
+  );
+
+  const onMouseOut = useCallback(
+    event => {
+      if (isPanning && !isChildOf(event.relatedTarget, container.current)) {
+        onPanEnd(event);
+        setPanning(false);
+      }
+    },
+    [isPanning, onPanEnd]
+  );
+
+  const onWheel = useCallback(
+    event => {
       event.preventDefault();
-    }
-  }
+      if (enableZoom && container.current && (!requirePinch || event.ctrlKey)) {
+        const { pageX, pageY, deltaY } = event;
+        const pointerPosition = getPositionOnElement(container.current)(
+          pageX,
+          pageY
+        );
 
-  function onMouseMove(event) {
-    if (isPanning) {
-      const { pageX, pageY } = event;
-      setPan(({ x, y }) => ({
-        x: x + pageX - prev.x,
-        y: y + pageY - prev.y
-      }));
-      setPrev({ x: pageX, y: pageY });
+        setZoom(
+          zoom => zoom * Math.pow(1 - zoomSensitivity, deltaY),
+          pointerPosition
+        );
 
-      onPan(event);
-    }
-  }
-
-  function onMouseUp(event) {
-    if (isPanning) {
-      onPanEnd(event);
-      setPanning(false);
-    }
-  }
-
-  function onMouseOut(event) {
-    if (isPanning && !isChildOf(event.relatedTarget, container.current)) {
-      onPanEnd(event);
-      setPanning(false);
-    }
-  }
-
-  function onWheel(event) {
-    event.preventDefault();
-    if (enableZoom && container.current && (!requirePinch || event.ctrlKey)) {
-      const { pageX, pageY, deltaY } = event;
-      const pointerPosition = getPositionOnElement(container.current)(
-        pageX,
-        pageY
-      );
-
-      setZoom(
-        zoom => zoom * Math.pow(1 - zoomSensitivity, deltaY),
-        pointerPosition
-      );
-
-      onZoom(event);
-    }
-  }
+        onZoom(event);
+      }
+    },
+    [enableZoom, requirePinch, onZoom, minX, maxX, minY, maxY, minZoom, maxZoom]
+  );
 
   return {
     transform: `translate3D(${transform.x}px, ${transform.y}px, 0) scale(${
@@ -164,6 +200,7 @@ const usePanZoom = ({
       onMouseDown,
       onMouseMove,
       onMouseUp,
+      onClickCapture,
       onMouseOut,
       onWheel
     }
