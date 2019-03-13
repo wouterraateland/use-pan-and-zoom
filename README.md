@@ -2,6 +2,8 @@
 
 👆+🔎 React hook for panning and zooming a container.
 
+Supports touch devices since version 0.4.0.
+
 ## Quick Start
 
 ```jsx
@@ -23,7 +25,7 @@ const Demo = () => {
 };
 ```
 
-[![Edit react-powerhooks example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/n3rpmj60w0)
+[![Edit use-pan-and-zoom example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/n3rpmj60w0)
 
 ## Installation
 
@@ -45,9 +47,14 @@ usePanZoom takes the following parameters:
   setPan: (position: Position | (position: Position) => Position) => void,
   setZoom: (zoom: Number | (zoom: Number) => Number, center: Position) => void,
   panZoomHandlers: {
+    onTouchStart: (event: React.SyntheticEvent) => void,
+    onTouchMove: (event: React.SyntheticEvent) => void,
+    onTouchEnd: (event: React.SyntheticEvent) => void,
+    onTouchCancel: (event: React.SyntheticEvent) => void,
     onMouseDown: (event: React.SyntheticEvent) => void,
     onMouseMove: (event: React.SyntheticEvent) => void,
     onMouseUp: (event: React.SyntheticEvent) => void,
+    onClickCapture: (event: React.SyntheticEvent) => void,
     onMouseOut: (event: React.SyntheticEvent) => void,
     onWheel: (event: React.SyntheticEvent) => void
   }
@@ -57,7 +64,7 @@ usePanZoom takes the following parameters:
   enableZoom?: Boolean,
   requirePinch?: Boolean,
   preventClickOnPan?: Boolean,
-  zoomSensitivity?: Number, // Between 0 and 1
+  zoomSensitivity?: Number, // 0 < zoomSensitivity < 1
   minZoom?: Number,
   maxZoom?: Number,
   minX?: Number,

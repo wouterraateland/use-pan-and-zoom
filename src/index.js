@@ -56,7 +56,7 @@ const usePanZoom = ({
     throw Error("Container cannot be empty and should be a ref");
   }
   const wasPanning = useRef(false);
-  const prev = useRef({ prevX: 0, prevY: 0 });
+  const prev = useRef([]);
 
   const [isPanning, setPanning] = useState(false);
   const [transform, setTransform] = useState({
@@ -104,44 +104,54 @@ const usePanZoom = ({
     [minX, maxX, minY, maxY, minZoom, maxZoom]
   );
 
-  const onMouseDown = useCallback(
-    event => {
+  const startPanZoom = useCallback(
+    pointers => {
       if (enablePan) {
-        prev.current = { prevX: event.pageX, prevY: event.pageY };
+        prev.current = pointers;
 
         setPanning(true);
 
-        onPanStart(event);
+        onPanStart(pointers);
       }
     },
     [enablePan, onPanStart]
   );
 
-  const onMouseMove = useCallback(
-    event => {
+  const movePanZoom = useCallback(
+    pointers => {
       if (isPanning) {
         wasPanning.current = true;
 
-        const { pageX, pageY } = event;
-        const { prevX, prevY } = prev.current;
-        prev.current = { prevX: pageX, prevY: pageY };
+        const prevPointers = prev.current;
+        prev.current = pointers;
 
-        setPan(({ x, y }) => ({
-          x: x + pageX - prevX,
-          y: y + pageY - prevY
-        }));
+        setPan(({ x, y }) => {
+          let dx = 0,
+            dy = 0,
+            l = Math.min(pointers.length, prevPointers.length);
 
-        onPan(event);
+          for (let i = 0; i < l; i++) {
+            dx += pointers[i].x - prevPointers[i].x;
+            dy += pointers[i].y - prevPointers[i].y;
+          }
+
+          return {
+            x: x + dx / l,
+            y: y + dy / l
+          };
+        });
+
+        onPan(pointers);
       }
     },
     [isPanning, onPan, minX, maxX, minY, maxY]
   );
 
-  const onMouseUp = useCallback(
-    event => {
+  const endPanZoom = useCallback(
+    () => {
       if (isPanning) {
         setPanning(false);
-        onPanEnd(event);
+        onPanEnd();
       }
     },
     [isPanning, onPanEnd]
@@ -159,9 +169,8 @@ const usePanZoom = ({
 
   const onMouseOut = useCallback(
     event => {
-      if (isPanning && !isChildOf(event.relatedTarget, container.current)) {
-        onPanEnd(event);
-        setPanning(false);
+      if (!isChildOf(event.relatedTarget, container.current)) {
+        endPanZoom();
       }
     },
     [isPanning, onPanEnd]
@@ -182,11 +191,27 @@ const usePanZoom = ({
           pointerPosition
         );
 
-        onZoom(event);
+        onZoom();
       }
     },
     [enableZoom, requirePinch, onZoom, minX, maxX, minY, maxY, minZoom, maxZoom]
   );
+
+  const onTouchStart = ({ touches }) =>
+    startPanZoom(
+      [...touches].map(({ pageX, pageY }) => ({ x: pageX, y: pageY }))
+    );
+  const onTouchMove = ({ touches }) =>
+    movePanZoom(
+      [...touches].map(({ pageX, pageY }) => ({ x: pageX, y: pageY }))
+    );
+  const onTouchEnd = () => endPanZoom();
+  const onTouchCancel = () => endPanZoom();
+  const onMouseDown = ({ pageX, pageY }) =>
+    startPanZoom([{ x: pageX, y: pageY }]);
+  const onMouseMove = ({ pageX, pageY }) =>
+    movePanZoom([{ x: pageX, y: pageY }]);
+  const onMouseUp = () => endPanZoom();
 
   return {
     transform: `translate3D(${transform.x}px, ${transform.y}px, 0) scale(${
@@ -197,6 +222,10 @@ const usePanZoom = ({
     setPan,
     setZoom,
     panZoomHandlers: {
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
+      onTouchCancel,
       onMouseDown,
       onMouseMove,
       onMouseUp,
