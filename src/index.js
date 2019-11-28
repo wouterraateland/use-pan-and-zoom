@@ -193,7 +193,7 @@ const usePanZoom = ({
 
           onZoom();
         } else {
-          setTransform({
+          setPan({
             ...transform,
             y: transform.y + scrollPanSensitivity * deltaY
           });
@@ -211,7 +211,7 @@ const usePanZoom = ({
       minZoom,
       maxZoom,
       scrollPanSensitivity,
-      setTransform,
+      setPan,
       transform
     ]
   );
