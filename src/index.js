@@ -51,7 +51,7 @@ const usePanZoom = ({
   onPan = noop,
   onPanEnd = noop,
   onZoom = noop,
-  requireCtrlToZoom = true,
+  requireCtrlToZoom = false,
   scrollPanSensitivity = 1
 }) => {
   if (container === undefined) {
