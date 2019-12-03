@@ -10,15 +10,14 @@ Supports touch devices since version 0.4.0.
 import usePanZoom from "use-pan-and-zoom";
 
 const Demo = () => {
-  const panZoomContainer = useRef(null);
   const { transform, panZoomHandlers } = usePanZoom({
-    container: panZoomContainer
+    setContainer
   });
 
   return (
-    <div ref={panZoomContainer} {...panZoomHandlers}>
+    <div ref={el => setContainer(el)} {...panZoomHandlers}>
       <div style={{ transform }}>
-        <p>👆and 🔎 me!</p>
+        <p>Drag to 👆and scroll / pinch to 🔎 me!</p>
       </div>
     </div>
   );
