@@ -50,7 +50,9 @@ const usePanZoom = ({
   onPanStart = noop,
   onPan = noop,
   onPanEnd = noop,
-  onZoom = noop
+  onZoom = noop,
+  requireCtrlToZoom = false,
+  scrollPanSensitivity = 1
 }) => {
   if (container === undefined) {
     throw Error("Container cannot be empty and should be a ref");
@@ -147,15 +149,12 @@ const usePanZoom = ({
     [isPanning, onPan, minX, maxX, minY, maxY]
   );
 
-  const endPanZoom = useCallback(
-    () => {
-      if (isPanning) {
-        setPanning(false);
-        onPanEnd();
-      }
-    },
-    [isPanning, onPanEnd]
-  );
+  const endPanZoom = useCallback(() => {
+    if (isPanning) {
+      setPanning(false);
+      onPanEnd();
+    }
+  }, [isPanning, onPanEnd]);
 
   const onClickCapture = useCallback(
     event => {
@@ -181,20 +180,40 @@ const usePanZoom = ({
       event.preventDefault();
       if (enableZoom && container.current && (!requirePinch || event.ctrlKey)) {
         const { pageX, pageY, deltaY } = event;
-        const pointerPosition = getPositionOnElement(container.current)(
-          pageX,
-          pageY
-        );
+        if (!requireCtrlToZoom || event.ctrlKey) {
+          const pointerPosition = getPositionOnElement(container.current)(
+            pageX,
+            pageY
+          );
 
-        setZoom(
-          zoom => zoom * Math.pow(1 - zoomSensitivity, deltaY),
-          pointerPosition
-        );
+          setZoom(
+            zoom => zoom * Math.pow(1 - zoomSensitivity, deltaY),
+            pointerPosition
+          );
 
-        onZoom();
+          onZoom();
+        } else {
+          setPan({
+            ...transform,
+            y: transform.y + scrollPanSensitivity * deltaY
+          });
+        }
       }
     },
-    [enableZoom, requirePinch, onZoom, minX, maxX, minY, maxY, minZoom, maxZoom]
+    [
+      enableZoom,
+      requirePinch,
+      onZoom,
+      minX,
+      maxX,
+      minY,
+      maxY,
+      minZoom,
+      maxZoom,
+      scrollPanSensitivity,
+      setPan,
+      transform
+    ]
   );
 
   const onTouchStart = ({ touches }) =>
@@ -214,9 +233,7 @@ const usePanZoom = ({
   const onMouseUp = () => endPanZoom();
 
   return {
-    transform: `translate3D(${transform.x}px, ${transform.y}px, 0) scale(${
-      transform.zoom
-    })`,
+    transform: `translate3D(${transform.x}px, ${transform.y}px, 0) scale(${transform.zoom})`,
     pan: { x: transform.x, y: transform.y },
     zoom: transform.zoom,
     setPan,

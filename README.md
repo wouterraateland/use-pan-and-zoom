@@ -79,7 +79,9 @@ usePanZoom takes the following parameters:
   onPanStart?: (event: React.SyntheticEvent) => void,
   onPan?: (event: React.SyntheticEvent) => void,
   onPanEnd?: (event: React.SyntheticEvent) => void,
-  onZoom?: (event: React.SyntheticEvent) => void
+  onZoom?: (event: React.SyntheticEvent) => void,
+  requireCtrlToZoom: Boolean,
+  scrollPanSensitivity?: Number
 })
 ```
 
