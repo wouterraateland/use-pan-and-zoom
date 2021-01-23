@@ -8,6 +8,7 @@ import useForceUpdate from "./useForceUpdate";
 const usePanZoom = ({
   enablePan = true,
   enableZoom = true,
+  disableWheel: false,
   requireCtrlToZoom = false,
   panOnDrag = true,
   preventClickOnPan = true,
@@ -211,35 +212,24 @@ const usePanZoom = ({
 
   const setContainer = useCallback(el => {
     if (el) {
-      el.addEventListener("wheel", onWheel);
+      if (!disableWheel) {
+        el.addEventListener("wheel", onWheel);
+      }
       el.addEventListener("gesturestart", onGestureStart);
       el.addEventListener("gesturechange", onGesture);
       el.addEventListener("gestureend", onGesture);
     } else if (container.current) {
       return () => {
-        container.current.removeEventListener("wheel", onWheel);
+        if (!disableWheel) {
+          container.current.removeEventListener("wheel", onWheel);
+        }
         container.current.removeEventListener("gesturestart", onGestureStart);
         container.current.removeEventListener("gesturechange", onGesture);
         container.current.removeEventListener("gestureend", onGesture);
       };
     }
     container.current = el;
-  }, []);
-
-  useEffect(() => {
-    if (container.current) {
-      container.current.addEventListener("wheel", onWheel);
-      container.current.addEventListener("gesturestart", onGestureStart);
-      container.current.addEventListener("gesturechange", onGesture);
-      container.current.addEventListener("gestureend", onGesture);
-      return () => {
-        container.current.removeEventListener("wheel", onWheel);
-        container.current.removeEventListener("gesturestart", onGestureStart);
-        container.current.removeEventListener("gesturechange", onGesture);
-        container.current.removeEventListener("gestureend", onGesture);
-      };
-    }
-  }, []);
+  }, [disableWheel]);
 
   const onTouchStart = ({ touches }) =>
     startPanZoom(
