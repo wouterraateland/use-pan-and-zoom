@@ -1,15 +1,13 @@
-import React from "react";
-
 import usePanZoom from "use-pan-and-zoom";
 
-const App = () => {
+export default function App() {
   const {
     transform,
     panZoomHandlers,
     setContainer,
     setPan,
     setZoom
-  } = usePanZoom({});
+  } = usePanZoom();
 
   return (
     <div className="container">
@@ -17,7 +15,11 @@ const App = () => {
         <button onClick={() => setPan({ x: 0, y: 0 })}>Reset pan</button>
         <button onClick={() => setZoom(1)}>Reset zoom</button>
       </div>
-      <div ref={el => setContainer(el)} className="outer" {...panZoomHandlers}>
+      <div
+        ref={(el) => setContainer(el)}
+        className="outer"
+        {...panZoomHandlers}
+      >
         <div className="inner" style={{ transform }}>
           <p>
             Drag to{" "}
@@ -43,6 +45,4 @@ const App = () => {
       </div>
     </div>
   );
-};
-
-export default App;
+}

@@ -23,6 +23,7 @@ body {
 }
 
 .outer {
+  touch-action: none;
   position: relative;
   flex-grow: 1;
 }
