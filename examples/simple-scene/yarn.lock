@@ -11578,15 +11578,7 @@ url-loader@4.1.1:
     mime-types "^2.1.27"
     schema-utils "^3.0.0"
 
-url-parse@^1.4.3:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.1.tgz#d5fa9890af8a5e1f274a2c98376510f6425f6e3b"
-  integrity sha512-HOfCOUJt7iSYzEx/UqgtwKRMC6EU91NFhsCHMv9oM03VJcVo2Qrp8T8kI9D7amFf1cu+/3CEhgb3rF9zL7k85Q==
-  dependencies:
-    querystringify "^2.1.1"
-    requires-port "^1.0.0"
-
-url-parse@^1.5.1:
+url-parse@^1.4.3, url-parse@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.1.tgz#d5fa9890af8a5e1f274a2c98376510f6425f6e3b"
   integrity sha512-HOfCOUJt7iSYzEx/UqgtwKRMC6EU91NFhsCHMv9oM03VJcVo2Qrp8T8kI9D7amFf1cu+/3CEhgb3rF9zL7k85Q==
@@ -11603,9 +11595,9 @@ url@^0.11.0:
     querystring "0.2.0"
 
 use-pan-and-zoom@^0.6.0:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/use-pan-and-zoom/-/use-pan-and-zoom-0.6.1.tgz#d9821f7e5d7a119b42603bc5b8b3b9204f013bbf"
-  integrity sha512-oh/vmBOdNK4nGP0WfjqvDyE0Hw7Z7XDOzQt5rk2/X4DBIot92/e0ziVEmyhmu18fBxjWY5BNnGX/feg1sG089g==
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/use-pan-and-zoom/-/use-pan-and-zoom-0.6.2.tgz#0880e66255e5d84523e7f8b4b7dd28492d744849"
+  integrity sha512-GVUrlMwRawD/G/GhgJCvv31sDSJYVVsKRRy+m3qDYqzoTomf4ir2/RkzvbCoxGpcDGew9d3dMLutE9mcSxko4g==
 
 use@^3.1.0:
   version "3.1.1"
