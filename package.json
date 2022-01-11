@@ -1,6 +1,6 @@
 {
   "name": "use-pan-and-zoom",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Pan and zoom a container using React Hooks",
   "source": "src/index.ts",
   "main": "./dist/index.js",
@@ -20,16 +20,16 @@
     "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
-    "react": "^17.0.6"
+    "react": "^17.0.2"
   },
   "devDependencies": {
-    "@types/react": "^17.0.6",
-    "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
-    "eslint": "^7.27.0",
+    "@types/react": "^17.0.38",
+    "@typescript-eslint/eslint-plugin": "^5.9.1",
+    "@typescript-eslint/parser": "^5.9.1",
+    "eslint": "^8.6.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "eslint-plugin-react": "^7.23.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.28.0",
     "microbundle": "^0.14.2",
     "prettier": "^2.5.1"
   }
