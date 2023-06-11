@@ -4,9 +4,16 @@
   "description": "Pan and zoom a container using React Hooks",
   "source": "src/index.ts",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./dist/index.modern.js",
-    "require": "./dist/index.js"
+    "import": {
+      "default": "./dist/index.modern.js",
+      "types": "./dist/index.d.ts"
+    },
+    "require":  {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
   "module": "./dist/index.module.js",
   "unpkg": "./dist/index.umd.js",
